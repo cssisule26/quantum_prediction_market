@@ -31,6 +31,8 @@ The complete scientific rationale, hypotheses, leakage controls, and literature
 map are in [`docs/RESEARCH_DESIGN.md`](docs/RESEARCH_DESIGN.md).
 The endpoint and schema checks are recorded in
 [`docs/API_INTEGRATION.md`](docs/API_INTEGRATION.md).
+The first real-data engineering run is documented in
+[`docs/SMOKE_TEST_RESULTS.md`](docs/SMOKE_TEST_RESULTS.md).
 
 ## Install
 
@@ -65,7 +67,8 @@ archived binary-market candlesticks with bid/ask OHLC fields:
 quantumcrowd fetch-kalshi \
   --output data/raw/kalshi_hourly.csv \
   --max-markets 100 \
-  --period-minutes 60
+  --period-minutes 60 \
+  --one-market-per-event
 ```
 
 To limit the sample to a recurring family, add `--series-ticker SERIES`. The
@@ -79,8 +82,13 @@ history:
 quantumcrowd fetch-polymarket \
   --output data/raw/polymarket_hourly.csv \
   --max-markets 100 \
-  --fidelity-minutes 60
+  --fidelity-minutes 60 \
+  --one-market-per-event
 ```
+
+`--one-market-per-event` is useful for a quick, diverse smoke test. Remove it
+for the full study; related contracts may remain in the dataset because the
+chronological splitter keeps their shared event entirely within one split.
 
 To produce one provenance-preserving CSV:
 
@@ -159,3 +167,15 @@ src/quantumcrowd/
   polymarket.py      Gamma discovery + CLOB price-history collector
   cli.py             demo and data-collection commands
 ```
+
+## Research integrity
+
+Do not claim quantum advantage unless the locked test result beats:
+
+- The market price itself.
+- An anchored classical residual model.
+- A strong nonlinear classical model.
+- A parameter-budget-matched classical bottleneck.
+
+Report all random seeds, failed runs, circuit depths, shot counts, optimizer
+budgets, fees, spreads, and confidence intervals.
