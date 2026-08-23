@@ -1,0 +1,68 @@
+{
+  "market": {
+    "forecast": {
+      "brier": 0.2527457449416697,
+      "log_loss": 0.697683676472305,
+      "ece": 0.29983219705791375,
+      "auc": 0.6190476190476191
+    },
+    "delta_vs_market": {
+      "delta_brier": 0.0,
+      "ci_low": 0.0,
+      "ci_high": 0.0
+    },
+    "paper_backtest": {
+      "markets": 16,
+      "trades": 0,
+      "coverage": 0.0,
+      "net_pnl": 0.0,
+      "mean_pnl_per_trade": 0.0,
+      "win_rate": 0.0,
+      "max_drawdown": 0.0
+    }
+  },
+  "anchored_logit": {
+    "forecast": {
+      "brier": 0.2644325893279039,
+      "log_loss": 0.7307634269065935,
+      "ece": 0.29887373679986795,
+      "auc": 0.6507936507936508
+    },
+    "delta_vs_market": {
+      "delta_brier": 0.007589331769757255,
+      "ci_low": -0.06946506706227677,
+      "ci_high": 0.09652217916435686
+    },
+    "paper_backtest": {
+      "markets": 16,
+      "trades": 12,
+      "coverage": 0.75,
+      "net_pnl": 1.1749916225528345,
+      "mean_pnl_per_trade": 0.09791596854606954,
+      "win_rate": 0.5833333333333334,
+      "max_drawdown": -0.7624945581709929
+    }
+  },
+  "classical_mlp": {
+    "forecast": {
+      "brier": 0.4993469716439759,
+      "log_loss": 3.299906259891449,
+      "ece": 0.5333647051854106,
+      "auc": 0.3650793650793651
+    },
+    "delta_vs_market": {
+      "delta_brier": 0.22051629434672407,
+      "ci_low": 0.01696421937575159,
+      "ci_high": 0.44915278459819497
+    },
+    "paper_backtest": {
+      "markets": 16,
+      "trades": 15,
+      "coverage": 0.9375,
+      "net_pnl": -0.9111639452838903,
+      "mean_pnl_per_trade": -0.06074426301892602,
+      "win_rate": 0.4666666666666667,
+      "max_drawdown": -2.087687230018884
+    }
+  }
+}

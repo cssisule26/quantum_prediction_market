@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantumcrowd"
+version = "0.2.0"
+description = "Hybrid quantum-classical probability calibration for prediction markets"
+readme = "README.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [{name = "QuantumCrowd contributors"}]
+dependencies = [
+  "numpy>=2.0,<3",
+  "pandas>=2.2,<3",
+  "scipy>=1.13,<2",
+  "scikit-learn>=1.5,<2",
+  "requests>=2.32,<3",
+]
+
+[project.optional-dependencies]
+quantum = [
+  "qiskit>=2.2,<3",
+  "qiskit-aer>=0.17,<1",
+  "qiskit-machine-learning>=0.9,<1",
+  "qiskit-ibm-runtime>=0.40,<1",
+]
+dev = [
+  "pytest>=8,<10",
+  "ruff>=0.12,<1",
+]
+
+[project.scripts]
+quantumcrowd = "quantumcrowd.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

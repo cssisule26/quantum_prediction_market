@@ -1,0 +1,7 @@
+{
+  "train_rows": 47,
+  "validation_rows": 17,
+  "test_rows": 16,
+  "horizon_hours": 24.0,
+  "synthetic_data": true
+}
