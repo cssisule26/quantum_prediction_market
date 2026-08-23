@@ -57,9 +57,11 @@ class KalshiHistoricalClient:
         self,
         max_markets: int = 100,
         series_ticker: str | None = None,
+        one_market_per_event: bool = False,
     ) -> Iterable[dict[str, Any]]:
         cursor: str | None = None
         yielded = 0
+        seen_event_ids: set[str] = set()
         while yielded < max_markets:
             params: dict[str, Any] = {
                 "limit": min(1000, max_markets - yielded),
@@ -77,6 +79,10 @@ class KalshiHistoricalClient:
                 break
             for market in markets:
                 if market.get("market_type") == "binary" and market.get("result") in {"yes", "no"}:
+                    event_id = str(market.get("event_ticker") or market.get("ticker"))
+                    if one_market_per_event and event_id in seen_event_ids:
+                        continue
+                    seen_event_ids.add(event_id)
                     yield market
                     yielded += 1
                     if yielded >= max_markets:
@@ -105,9 +111,15 @@ class KalshiHistoricalClient:
         max_markets: int = 100,
         series_ticker: str | None = None,
         period_minutes: int = 60,
+        one_market_per_event: bool = False,
     ) -> pd.DataFrame:
         rows: list[dict[str, Any]] = []
-        for market in self.iter_archived_markets(max_markets=max_markets, series_ticker=series_ticker):
+        markets = self.iter_archived_markets(
+            max_markets=max_markets,
+            series_ticker=series_ticker,
+            one_market_per_event=one_market_per_event,
+        )
+        for market in markets:
             ticker = str(market["ticker"])
             open_time = pd.to_datetime(market.get("open_time"), utc=True, errors="coerce")
             close_time = pd.to_datetime(

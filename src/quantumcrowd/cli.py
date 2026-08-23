@@ -108,11 +108,12 @@ def _fetch_kalshi(args: argparse.Namespace) -> None:
 
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    client = KalshiHistoricalClient(request_pause=args.request_pause)
+    client = KalshiHistoricalClient(base_url=args.base_url, request_pause=args.request_pause)
     frame = client.collect_snapshots(
         max_markets=args.max_markets,
         series_ticker=args.series_ticker,
         period_minutes=args.period_minutes,
+        one_market_per_event=args.one_market_per_event,
     )
     if frame.empty:
         raise RuntimeError("No eligible archived binary-market candles were returned")
@@ -131,6 +132,7 @@ def _fetch_polymarket(args: argparse.Namespace) -> None:
         tag_id=args.tag_id,
         fidelity_minutes=args.fidelity_minutes,
         max_scan_pages=args.max_scan_pages,
+        one_market_per_event=args.one_market_per_event,
     )
     if frame.empty:
         raise RuntimeError("No confidently resolved binary Polymarket price histories were returned")
@@ -144,16 +146,21 @@ def _fetch_both(args: argparse.Namespace) -> None:
 
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
-    kalshi = KalshiHistoricalClient(request_pause=args.request_pause).collect_snapshots(
+    kalshi = KalshiHistoricalClient(
+        base_url=args.kalshi_base_url,
+        request_pause=args.request_pause,
+    ).collect_snapshots(
         max_markets=args.kalshi_max_markets,
         series_ticker=args.kalshi_series_ticker,
         period_minutes=args.kalshi_period_minutes,
+        one_market_per_event=args.kalshi_one_market_per_event,
     )
     polymarket = PolymarketHistoricalClient(request_pause=args.request_pause).collect_snapshots(
         max_markets=args.polymarket_max_markets,
         tag_id=args.polymarket_tag_id,
         fidelity_minutes=args.polymarket_fidelity_minutes,
         max_scan_pages=args.polymarket_max_scan_pages,
+        one_market_per_event=args.polymarket_one_market_per_event,
     )
     missing = [name for name, frame in (("Kalshi", kalshi), ("Polymarket", polymarket)) if frame.empty]
     if missing:
@@ -183,9 +190,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     fetch = subparsers.add_parser("fetch-kalshi", help="Collect public archived Kalshi data")
     fetch.add_argument("--output", required=True)
+    fetch.add_argument(
+        "--base-url", default="https://external-api.kalshi.com/trade-api/v2"
+    )
     fetch.add_argument("--series-ticker")
     fetch.add_argument("--max-markets", type=int, default=100)
     fetch.add_argument("--period-minutes", type=int, choices=[1, 60, 1440], default=60)
+    fetch.add_argument("--one-market-per-event", action="store_true")
     fetch.add_argument("--request-pause", type=float, default=0.05)
     fetch.set_defaults(func=_fetch_kalshi)
 
@@ -197,18 +208,24 @@ def build_parser() -> argparse.ArgumentParser:
     polymarket.add_argument("--max-markets", type=int, default=100)
     polymarket.add_argument("--fidelity-minutes", type=int, default=60)
     polymarket.add_argument("--max-scan-pages", type=int, default=50)
+    polymarket.add_argument("--one-market-per-event", action="store_true")
     polymarket.add_argument("--request-pause", type=float, default=0.05)
     polymarket.set_defaults(func=_fetch_polymarket)
 
     both = subparsers.add_parser("fetch-both", help="Collect and normalize both public venues")
     both.add_argument("--output", required=True)
+    both.add_argument(
+        "--kalshi-base-url", default="https://external-api.kalshi.com/trade-api/v2"
+    )
     both.add_argument("--kalshi-series-ticker")
     both.add_argument("--kalshi-max-markets", type=int, default=100)
     both.add_argument("--kalshi-period-minutes", type=int, choices=[1, 60, 1440], default=60)
+    both.add_argument("--kalshi-one-market-per-event", action="store_true")
     both.add_argument("--polymarket-tag-id", type=int)
     both.add_argument("--polymarket-max-markets", type=int, default=100)
     both.add_argument("--polymarket-fidelity-minutes", type=int, default=60)
     both.add_argument("--polymarket-max-scan-pages", type=int, default=50)
+    both.add_argument("--polymarket-one-market-per-event", action="store_true")
     both.add_argument("--request-pause", type=float, default=0.05)
     both.set_defaults(func=_fetch_both)
     return parser

@@ -117,6 +117,8 @@ def test_polymarket_collector_uses_gamma_token_and_clob_contract() -> None:
     assert frame["resolved"].unique().tolist() == [1]
     assert not frame["has_executable_quotes"].any()
     assert session.calls[0][1]["closed"] == "true"
+    assert session.calls[0][1]["order"] == "id"
+    assert session.calls[0][1]["ascending"] == "false"
     assert "offset" not in session.calls[0][1]
     assert session.calls[1][1] == {
         "market": "yes-token",

@@ -36,7 +36,7 @@ Price-history base URL: `https://clob.polymarket.com`
 
 | Purpose | Request | Contract used by QuantumCrowd |
 |---|---|---|
-| Closed market discovery | `GET /markets/keyset` | `closed=true`, `limit` up to 100, optional `tag_id`, and opaque `after_cursor`; never `offset` |
+| Closed market discovery | `GET /markets/keyset` | `closed=true`, recent IDs first, `limit` up to 100, optional `tag_id`, and opaque `after_cursor`; never `offset` |
 | Observed price history | `GET /prices-history` | YES outcome token in `market`; Unix seconds in `startTs` and `endTs`; sampling minutes in `fidelity` |
 
 Gamma currently returns `outcomes`, `outcomePrices`, and `clobTokenIds` as
@@ -44,6 +44,10 @@ JSON-encoded string arrays. QuantumCrowd aligns their indexes, accepts only
 binary YES/NO markets, and requires terminal prices to identify the settled
 outcome. It requests history with the YES token ID—not the Gamma market ID or
 condition ID.
+
+Some pre-CLOB closed records still have Gamma metadata but no queryable CLOB
+history. The collector requests recent IDs first and records per-market history
+errors instead of aborting the complete collection.
 
 The CLOB history response contains points shaped like `{t, p}`. It is not a
 historical order book and supplies neither bid nor ask. QuantumCrowd therefore

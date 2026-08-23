@@ -1,0 +1,16 @@
+{
+  "raw_rows": 26,
+  "markets": 12,
+  "events": 12,
+  "collection_error_count": 0,
+  "collection_errors": [],
+  "forecast_horizon_hours": 1.0,
+  "warning": "Engineering smoke test only; too small for a scientific claim.",
+  "horizon_rows": 12,
+  "train_events": 7,
+  "validation_events": 2,
+  "test_events": 3,
+  "train_rows": 7,
+  "validation_rows": 2,
+  "test_rows": 3
+}

@@ -1,0 +1,53 @@
+{
+  "market": {
+    "forecast": {
+      "brier": 0.25,
+      "log_loss": 0.6931471805599453,
+      "ece": 0.16666666666666663,
+      "auc": 0.5
+    },
+    "paper_backtest": {
+      "markets": 3,
+      "trades": 0,
+      "coverage": 0.0,
+      "net_pnl": 0.0,
+      "mean_pnl_per_trade": 0.0,
+      "win_rate": 0.0,
+      "max_drawdown": 0.0
+    }
+  },
+  "anchored_logit": {
+    "forecast": {
+      "brier": 0.3333266667666667,
+      "log_loss": 3.8376484883582602,
+      "ece": 0.3333233333333334,
+      "auc": 0.5
+    },
+    "paper_backtest": {
+      "markets": 3,
+      "trades": 0,
+      "coverage": 0.0,
+      "net_pnl": 0.0,
+      "mean_pnl_per_trade": 0.0,
+      "win_rate": 0.0,
+      "max_drawdown": 0.0
+    }
+  },
+  "classical_mlp": {
+    "forecast": {
+      "brier": 0.6665749144235985,
+      "log_loss": 6.389388994374177,
+      "ece": 0.6665978782145991,
+      "auc": 1.0
+    },
+    "paper_backtest": {
+      "markets": 3,
+      "trades": 0,
+      "coverage": 0.0,
+      "net_pnl": 0.0,
+      "mean_pnl_per_trade": 0.0,
+      "win_rate": 0.0,
+      "max_drawdown": 0.0
+    }
+  }
+}

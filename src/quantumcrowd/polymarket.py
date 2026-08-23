@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 import pandas as pd
@@ -70,6 +70,16 @@ def _event_source_id(market: dict[str, Any]) -> str:
     return str(market.get("conditionId") or market.get("id"))
 
 
+def _earliest_market_time(market: dict[str, Any]) -> pd.Timestamp:
+    candidates = pd.to_datetime(
+        [market.get("createdAt"), market.get("startDate"), market.get("startDateIso")],
+        utc=True,
+        errors="coerce",
+    )
+    valid = candidates[~pd.isna(candidates)]
+    return valid.min() if len(valid) else pd.NaT
+
+
 @dataclass
 class PolymarketHistoricalClient:
     gamma_url: str = DEFAULT_GAMMA_URL
@@ -77,6 +87,7 @@ class PolymarketHistoricalClient:
     timeout: float = 30.0
     request_pause: float = 0.05
     session: Any = None
+    collection_errors: list[dict[str, str]] = field(default_factory=list, init=False)
 
     def __post_init__(self) -> None:
         if self.session is None:
@@ -106,6 +117,7 @@ class PolymarketHistoricalClient:
         max_markets: int = 100,
         tag_id: int | None = None,
         max_scan_pages: int = 50,
+        one_market_per_event: bool = False,
     ) -> Iterable[dict[str, Any]]:
         """Page through closed Gamma markets and keep confidently settled YES/NO markets."""
 
@@ -113,10 +125,14 @@ class PolymarketHistoricalClient:
             return
         cursor: str | None = None
         yielded = 0
+        seen_event_ids: set[str] = set()
         for _ in range(max_scan_pages):
             params: dict[str, Any] = {
                 "closed": "true",
                 "limit": min(100, max(20, max_markets - yielded)),
+                # Recent IDs avoid pre-CLOB records whose tokens have no price history.
+                "order": "id",
+                "ascending": "false",
             }
             if cursor:
                 params["after_cursor"] = cursor
@@ -127,6 +143,10 @@ class PolymarketHistoricalClient:
             for market in markets:
                 if not isinstance(market, dict) or _binary_market_parts(market) is None:
                     continue
+                event_id = _event_source_id(market)
+                if one_market_per_event and event_id in seen_event_ids:
+                    continue
+                seen_event_ids.add(event_id)
                 yield market
                 yielded += 1
                 if yielded >= max_markets:
@@ -163,12 +183,15 @@ class PolymarketHistoricalClient:
         tag_id: int | None = None,
         fidelity_minutes: int = 60,
         max_scan_pages: int = 50,
+        one_market_per_event: bool = False,
     ) -> pd.DataFrame:
+        self.collection_errors.clear()
         rows: list[dict[str, Any]] = []
         markets = self.iter_resolved_binary_markets(
             max_markets=max_markets,
             tag_id=tag_id,
             max_scan_pages=max_scan_pages,
+            one_market_per_event=one_market_per_event,
         )
         for market in markets:
             parts = _binary_market_parts(market)
@@ -177,11 +200,7 @@ class PolymarketHistoricalClient:
             yes_token_id, resolved = parts
             source_market_id = str(market["id"])
             source_event_id = _event_source_id(market)
-            open_time = pd.to_datetime(
-                market.get("startDate") or market.get("startDateIso") or market.get("createdAt"),
-                utc=True,
-                errors="coerce",
-            )
+            open_time = _earliest_market_time(market)
             close_time = pd.to_datetime(
                 market.get("closedTime")
                 or market.get("endDate")
@@ -192,12 +211,21 @@ class PolymarketHistoricalClient:
             )
             if pd.isna(open_time) or pd.isna(close_time) or close_time <= open_time:
                 continue
-            history = self.price_history(
-                token_id=yes_token_id,
-                start_ts=int(open_time.timestamp()),
-                end_ts=int(close_time.timestamp()),
-                fidelity_minutes=fidelity_minutes,
-            )
+            try:
+                history = self.price_history(
+                    token_id=yes_token_id,
+                    start_ts=int(open_time.timestamp()),
+                    end_ts=int(close_time.timestamp()),
+                    fidelity_minutes=fidelity_minutes,
+                )
+            except Exception as exc:
+                self.collection_errors.append(
+                    {
+                        "source_market_id": source_market_id,
+                        "error": f"{type(exc).__name__}: {exc}",
+                    }
+                )
+                continue
             for point in history:
                 price = _float(point.get("p"), default=float("nan"))
                 timestamp = pd.to_datetime(point.get("t"), unit="s", utc=True, errors="coerce")

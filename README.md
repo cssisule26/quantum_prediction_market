@@ -36,7 +36,20 @@ The first real-data engineering run is documented in
 
 ## Install
 
-Classical baseline and synthetic demonstration:
+Full Conda environment, including Qiskit simulators and IBM Runtime support:
+
+```bash
+conda env create -f environment.yml
+conda activate quantumcrowd
+pytest
+quantumcrowd demo --output-dir outputs/demo
+```
+
+Run `conda env create` from the repository root so the editable local-package
+entry in `environment.yml` resolves correctly.
+
+Alternatively, create a smaller virtual environment for only the classical
+pipeline:
 
 ```bash
 python -m venv .venv

@@ -1,1 +1,12 @@
+name: quantumcrowd
 
+channels:
+  - conda-forge
+
+dependencies:
+  - python=3.11
+  - pip>=24
+  - pip:
+      # Installs the local package plus classical, test, Qiskit, Aer,
+      # machine-learning, and IBM Runtime dependencies from pyproject.toml.
+      - -e .[quantum,dev]
