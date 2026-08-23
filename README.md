@@ -159,15 +159,3 @@ src/quantumcrowd/
   polymarket.py      Gamma discovery + CLOB price-history collector
   cli.py             demo and data-collection commands
 ```
-
-## Research integrity
-
-Do not claim quantum advantage unless the locked test result beats:
-
-- The market price itself.
-- An anchored classical residual model.
-- A strong nonlinear classical model.
-- A parameter-budget-matched classical bottleneck.
-
-Report all random seeds, failed runs, circuit depths, shot counts, optimizer
-budgets, fees, spreads, and confidence intervals.
